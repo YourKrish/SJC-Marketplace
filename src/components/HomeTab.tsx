@@ -23,7 +23,7 @@ export default function HomeTab({ listings, onSelectListing }: HomeTabProps) {
           St John's Marketplace
         </h2>
         <p className="text-navy-foreground/70 text-sm max-w-md">
-          Buy and sell school essentials — books, stationery, sports kit, uniforms and more. Connect directly with fellow students.
+          Buy and sell anything from notes, stationery, sports kit, books and more. Connect directly with fellow students.
         </p>
       </div>
 

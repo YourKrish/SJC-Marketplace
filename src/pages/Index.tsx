@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { fetchListings } from '@/lib/store';
 import { Listing } from '@/lib/types';
 import { initAuth, logout as doLogout, User as UserType } from '@/lib/auth';
+import { isAdminUser } from '@/lib/admin';
 import { startConversation, getConversationCount } from '@/lib/messages';
 import MarketplaceHeader from '@/components/MarketplaceHeader';
 import HomeTab from '@/components/HomeTab';
@@ -111,6 +112,7 @@ const Index = () => {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onCreateListing={handleCreateListing}
+        showAdminLink={isAdminUser(user)}
       />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
@@ -125,6 +127,7 @@ const Index = () => {
             user={user}
             initialConversationId={initialConversationId}
             onConversationUpdate={refreshMessageCount}
+            onListingRemoved={refreshListings}
           />
         )}
         {activeTab === 'profile' && user && (
@@ -177,6 +180,11 @@ const Index = () => {
         open={!!selectedListing}
         onClose={() => setSelectedListing(null)}
         onMessageSeller={handleMessageSeller}
+        currentUserEmail={user?.email}
+        onListingRemoved={() => {
+          refreshListings();
+          setSelectedListing(null);
+        }}
       />
 
       <CreateListing

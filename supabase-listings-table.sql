@@ -16,8 +16,12 @@ CREATE TABLE IF NOT EXISTS public.listings (
   seller_name TEXT,
   seller_contact TEXT,
   image_urls JSONB DEFAULT '[]',
-  advertised BOOLEAN DEFAULT false
+  advertised BOOLEAN DEFAULT false,
+  ad_approved BOOLEAN DEFAULT NULL
 );
+
+-- Add ad_approved if table already existed (for ad approval flow)
+ALTER TABLE public.listings ADD COLUMN IF NOT EXISTS ad_approved BOOLEAN DEFAULT NULL;
 
 ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
 

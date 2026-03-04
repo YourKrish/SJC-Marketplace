@@ -17,6 +17,7 @@ export interface Conversation {
   lastMessage?: string;
   lastMessageAt?: string;
   createdAt: string;
+  listingRemoved?: boolean;
 }
 
 interface ConversationRow {
@@ -30,6 +31,7 @@ interface ConversationRow {
   created_at: string;
   updated_at: string;
   last_message?: string | null;
+  listing_removed?: boolean;
 }
 
 interface MessageRow {
@@ -53,6 +55,7 @@ function rowToConversation(row: ConversationRow): Conversation {
     lastMessage: row.last_message ?? undefined,
     lastMessageAt: row.updated_at,
     createdAt: row.created_at,
+    listingRemoved: Boolean(row.listing_removed),
   };
 }
 
@@ -196,4 +199,17 @@ export async function sendMessage(
 export async function getConversationCount(userId: string, userEmail?: string): Promise<number> {
   const convos = await getConversationsForUser(userId, userEmail);
   return convos.length;
+}
+
+/** Mark a conversation's listing as sold/removed (so both seller and buyer see the grey state). */
+export async function markConversationListingRemoved(conversationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('conversations')
+    .update({ listing_removed: true, updated_at: new Date().toISOString() })
+    .eq('id', conversationId);
+
+  if (error) {
+    console.error('markConversationListingRemoved:', error);
+    throw new Error(error.message);
+  }
 }

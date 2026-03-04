@@ -3,8 +3,10 @@ import { Listing, CATEGORY_LABELS, CONDITION_LABELS } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MessageCircle, ArrowLeft, User, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageCircle, ArrowLeft, User, Clock, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { deleteListing } from '@/lib/store';
+import { useToast } from '@/hooks/use-toast';
 
 const CATEGORY_IMAGES: Record<string, string> = {
   books: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&h=400&fit=crop',
@@ -20,10 +22,17 @@ interface ProductDetailProps {
   open: boolean;
   onClose: () => void;
   onMessageSeller?: (listing: Listing) => void;
+  /** When set, if the current user is the seller, show a "Remove listing" button. */
+  currentUserEmail?: string | null;
+  /** Called after the listing is successfully removed (e.g. to refresh lists). */
+  onListingRemoved?: () => void;
 }
 
-export default function ProductDetail({ listing, open, onClose, onMessageSeller }: ProductDetailProps) {
+export default function ProductDetail({ listing, open, onClose, onMessageSeller, currentUserEmail, onListingRemoved }: ProductDetailProps) {
+  const { toast } = useToast();
   const [imgIndex, setImgIndex] = useState(0);
+  const [removing, setRemoving] = useState(false);
+  const isOwner = !!listing && !!currentUserEmail && listing.sellerContact.toLowerCase() === currentUserEmail.toLowerCase();
 
   if (!listing) return null;
 
@@ -99,21 +108,48 @@ export default function ProductDetail({ listing, open, onClose, onMessageSeller 
 
           <p className="text-muted-foreground text-sm leading-relaxed">{listing.description}</p>
 
-          <div className="border-t border-border pt-4">
-            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Seller
-            </h4>
-            <p className="text-sm text-muted-foreground mb-4">
-              Sold by <span className="font-medium text-foreground">{listing.sellerName}</span>
-            </p>
-            <Button
-              onClick={() => onMessageSeller?.(listing)}
-              className="w-full bg-gradient-navy text-navy-foreground hover:opacity-90"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Message Seller
-            </Button>
+          <div className="border-t border-border pt-4 space-y-2">
+            {isOwner ? (
+              <>
+                <p className="text-sm text-muted-foreground">This is your listing.</p>
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  disabled={removing}
+                  onClick={async () => {
+                    if (!listing) return;
+                    setRemoving(true);
+                    try {
+                      await deleteListing(listing.id);
+                      toast({ title: 'Listing removed', description: 'Your listing has been removed from the marketplace.' });
+                      onListingRemoved?.();
+                      onClose();
+                    } catch {
+                      toast({ title: 'Could not remove listing', variant: 'destructive' });
+                    } finally {
+                      setRemoving(false);
+                    }
+                  }}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {removing ? 'Removing…' : 'Remove listing'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Seller
+                </h4>
+                <Button
+                  onClick={() => onMessageSeller?.(listing)}
+                  className="w-full mt-2 bg-gradient-navy text-navy-foreground hover:opacity-90"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Message Seller
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </DialogContent>

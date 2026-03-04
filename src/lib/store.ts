@@ -14,6 +14,7 @@ export interface ListingRow {
   seller_contact: string | null;
   image_urls: string[] | null;
   advertised: boolean;
+  ad_approved?: boolean | null;
 }
 
 function rowToListing(row: ListingRow): Listing {
@@ -29,14 +30,16 @@ function rowToListing(row: ListingRow): Listing {
     imageUrls: Array.isArray(row.image_urls) ? row.image_urls : [],
     createdAt: row.timestamp,
     advertised: Boolean(row.advertised),
+    adApproved: row.ad_approved ?? undefined,
   };
 }
 
-/** Fetch all listings from Supabase (for everyone to see on the website). */
+/** Fetch listings visible on the marketplace: non-advertised or advertised and approved. */
 export async function fetchListings(): Promise<Listing[]> {
   const { data, error } = await supabase
     .from('listings')
     .select('*')
+    .or('advertised.eq.false,and(advertised.eq.true,ad_approved.eq.true)')
     .order('timestamp', { ascending: false });
 
   if (error) {
@@ -46,7 +49,7 @@ export async function fetchListings(): Promise<Listing[]> {
   return (data ?? []).map((row: ListingRow) => rowToListing(row));
 }
 
-/** Save a new listing to the database so it appears on the website for everyone. */
+/** Save a new listing. Advertised listings get ad_approved = null (pending admin approval). */
 export async function addListing(listing: Listing): Promise<void> {
   const { error } = await supabase.from('listings').insert({
     id: listing.id,
@@ -60,6 +63,7 @@ export async function addListing(listing: Listing): Promise<void> {
     seller_contact: listing.sellerContact,
     image_urls: listing.imageUrls,
     advertised: listing.advertised,
+    ad_approved: listing.advertised ? null : undefined,
   });
 
   if (error) {
@@ -71,4 +75,61 @@ export async function addListing(listing: Listing): Promise<void> {
 /** Get a single listing by id (e.g. from an already-fetched list). */
 export function getListingById(listings: Listing[], id: string): Listing | undefined {
   return listings.find((l) => l.id === id);
+}
+
+/** Delete a listing from the database (e.g. when seller marks as sold). */
+export async function deleteListing(listingId: string): Promise<void> {
+  const { error } = await supabase.from('listings').delete().eq('id', listingId);
+  if (error) {
+    console.error('Failed to delete listing:', error);
+    throw new Error(error.message);
+  }
+}
+
+/** Fetch listings pending admin approval (advertised and ad_approved IS NULL). */
+export async function fetchPendingAdListings(): Promise<Listing[]> {
+  const { data, error } = await supabase
+    .from('listings')
+    .select('*')
+    .eq('advertised', true)
+    .is('ad_approved', null)
+    .order('timestamp', { ascending: false });
+
+  if (error) {
+    console.error('Failed to fetch pending ad listings:', error);
+    return [];
+  }
+  return (data ?? []).map((row: ListingRow) => rowToListing(row));
+}
+
+/** Approve an advertised listing so it appears on the marketplace. */
+export async function approveAdListing(id: string): Promise<void> {
+  const { error } = await supabase.from('listings').update({ ad_approved: true }).eq('id', id);
+  if (error) {
+    console.error('Failed to approve listing:', error);
+    throw new Error(error.message);
+  }
+}
+
+/** Reject an advertised listing so it does not appear on the marketplace. */
+export async function rejectAdListing(id: string): Promise<void> {
+  const { error } = await supabase.from('listings').update({ ad_approved: false }).eq('id', id);
+  if (error) {
+    console.error('Failed to reject listing:', error);
+    throw new Error(error.message);
+  }
+}
+
+/** Fetch all listings for admin (no approval filter). */
+export async function fetchAllListingsForAdmin(): Promise<Listing[]> {
+  const { data, error } = await supabase
+    .from('listings')
+    .select('*')
+    .order('timestamp', { ascending: false });
+
+  if (error) {
+    console.error('Failed to fetch all listings for admin:', error);
+    return [];
+  }
+  return (data ?? []).map((row: ListingRow) => rowToListing(row));
 }

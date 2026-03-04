@@ -1,5 +1,6 @@
 import collegeCrest from '@/assets/college-crest.png';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -7,9 +8,10 @@ interface MarketplaceHeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onCreateListing: () => void;
+  showAdminLink?: boolean;
 }
 
-export default function MarketplaceHeader({ searchQuery, onSearchChange, onCreateListing }: MarketplaceHeaderProps) {
+export default function MarketplaceHeader({ searchQuery, onSearchChange, onCreateListing, showAdminLink }: MarketplaceHeaderProps) {
   return (
     <header className="bg-gradient-navy text-navy-foreground sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-4">
@@ -38,6 +40,14 @@ export default function MarketplaceHeader({ searchQuery, onSearchChange, onCreat
             <span className="hidden sm:inline">Sell Item</span>
             <span className="sm:hidden">Sell</span>
           </Button>
+          {showAdminLink && (
+            <Link to="/admin">
+              <Button variant="outline" size="sm" className="shrink-0 border-navy-foreground/30 text-navy-foreground hover:bg-navy-foreground/10">
+                <Shield className="w-4 h-4 mr-1" />
+                Admin
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>);

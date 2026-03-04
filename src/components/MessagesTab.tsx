@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, ArrowLeft, MessageCircle } from 'lucide-react';
+import { Send, ArrowLeft, MessageCircle, CheckCircle } from 'lucide-react';
 import { User } from '@/lib/auth';
 import {
   Conversation,
@@ -9,7 +9,10 @@ import {
   getConversationsForUser,
   getMessagesForConversation,
   sendMessage,
+  markConversationListingRemoved,
 } from '@/lib/messages';
+import { deleteListing } from '@/lib/store';
+import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -17,9 +20,11 @@ interface MessagesTabProps {
   user: User;
   initialConversationId?: string | null;
   onConversationUpdate?: () => void;
+  onListingRemoved?: () => void;
 }
 
-export default function MessagesTab({ user, initialConversationId, onConversationUpdate }: MessagesTabProps) {
+export default function MessagesTab({ user, initialConversationId, onConversationUpdate, onListingRemoved }: MessagesTabProps) {
+  const { toast } = useToast();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeConvo, setActiveConvo] = useState<Conversation | null>(null);
@@ -27,7 +32,11 @@ export default function MessagesTab({ user, initialConversationId, onConversatio
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [newMsg, setNewMsg] = useState('');
   const [sending, setSending] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const isSeller = (convo: Conversation) =>
+    convo.participants.some((p) => p.id === user.email);
 
   const loadConversations = useCallback(async () => {
     setLoading(true);
@@ -84,6 +93,28 @@ export default function MessagesTab({ user, initialConversationId, onConversatio
 
   const otherParticipant = (convo: Conversation) =>
     convo.participants.find((p) => p.id !== user.id && p.id !== user.email)?.name || 'Unknown';
+
+  const handleMarkSold = async () => {
+    if (!activeConvo || removing) return;
+    setRemoving(true);
+    try {
+      await deleteListing(activeConvo.listingId);
+      await markConversationListingRemoved(activeConvo.id);
+      setActiveConvo((prev) => (prev ? { ...prev, listingRemoved: true } : null));
+      toast({ title: 'Listing removed', description: 'The item has been marked as sold and removed from the marketplace.' });
+      onListingRemoved?.();
+      await loadConversations();
+      onConversationUpdate?.();
+    } catch (e) {
+      toast({
+        title: 'Could not remove listing',
+        description: e instanceof Error ? e.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setRemoving(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full min-h-[60vh]">
@@ -192,6 +223,27 @@ export default function MessagesTab({ user, initialConversationId, onConversatio
               })
             )}
           </div>
+
+          {activeConvo && (activeConvo.listingRemoved ? (
+            <div className="px-3 pt-2 pb-1 border-t border-border">
+              <div className="w-full flex items-center justify-center gap-2 rounded-lg border border-border bg-muted/50 py-2.5 text-muted-foreground text-sm">
+                <CheckCircle className="w-4 h-4 shrink-0" />
+                Marked as sold and removed listing
+              </div>
+            </div>
+          ) : isSeller(activeConvo) ? (
+            <div className="px-3 pt-2 pb-1 border-t border-border">
+              <Button
+                variant="default"
+                className="w-full bg-primary text-primary-foreground hover:opacity-90"
+                onClick={handleMarkSold}
+                disabled={removing}
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {removing ? 'Removing…' : 'Mark as sold and remove listing'}
+              </Button>
+            </div>
+          ) : null)}
 
           <div className="p-3 border-t border-border flex gap-2">
             <Input

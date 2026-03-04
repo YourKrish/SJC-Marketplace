@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.conversations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   last_message TEXT,
+  listing_removed BOOLEAN NOT NULL DEFAULT false,
   UNIQUE(listing_id, buyer_id)
 );
 
@@ -26,6 +27,8 @@ CREATE TABLE IF NOT EXISTS public.messages (
 
 -- Add last_message if table already existed
 ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS last_message TEXT;
+-- Add listing_removed if table already existed
+ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS listing_removed BOOLEAN NOT NULL DEFAULT false;
 
 CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON public.messages(conversation_id);
 CREATE INDEX IF NOT EXISTS idx_conversations_buyer_id ON public.conversations(buyer_id);

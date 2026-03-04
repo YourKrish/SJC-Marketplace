@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, CreditCard, CheckCircle, AlertCircle, Upload, ImagePlus, X } from 'lucide-react';
-import { Category, Condition, CATEGORY_LABELS, CONDITION_LABELS, calculateListingFee, LISTING_FEE_PERCENTAGE, Listing } from '@/lib/types';
+import { Category, Condition, CATEGORY_LABELS, CONDITION_LABELS, calculateAdvertisingFee, Listing } from '@/lib/types';
 import { addListing } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/lib/auth';
@@ -33,6 +33,7 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [justCreatedAdvertised, setJustCreatedAdvertised] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
   }, [user, open]);
 
   const priceNum = parseFloat(price) || 0;
-  const listingFee = calculateListingFee(priceNum);
+  const advertisingFee = calculateAdvertisingFee(priceNum);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -114,8 +115,13 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
     setSaving(true);
     try {
       await addListing(buildListing(advertised));
+      setJustCreatedAdvertised(advertised);
       setStep('success');
-      toast({ title: 'Listing created!', description: advertised ? 'Your advertised product is now live on the marketplace.' : 'Your product is now live on the marketplace.' });
+      if (advertised) {
+        toast({ title: 'Listing submitted', description: 'Your ad will be reviewed within 3 business days. You\'ll see it on the marketplace once approved.' });
+      } else {
+        toast({ title: 'Listing created!', description: 'Your product is now live on the marketplace.' });
+      }
     } catch (e) {
       toast({ title: 'Could not save listing', description: e instanceof Error ? e.message : 'Please try again.', variant: 'destructive' });
     } finally {
@@ -133,6 +139,7 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
 
   const handleClose = () => {
     setStep('form');
+    setJustCreatedAdvertised(false);
     setTitle('');
     setDescription('');
     setPrice('');
@@ -154,7 +161,7 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
             <DialogHeader>
               <DialogTitle className="font-display text-xl">Create Listing</DialogTitle>
               <DialogDescription>
-                List your school items for sale. You can list for free or pay a {(LISTING_FEE_PERCENTAGE * 100).toFixed(0)}% fee to advertise it.
+                List your school items for sale. You can list for free or pay a flat advertising fee (R20–R120 depending on item price) to advertise it. Advertised listings are reviewed within 3 business days before going live.
               </DialogDescription>
             </DialogHeader>
 
@@ -262,8 +269,8 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
                     <span className="font-medium">R{priceNum.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Advertising Fee ({(LISTING_FEE_PERCENTAGE * 100).toFixed(0)}%)</span>
-                    <span className="font-medium text-secondary">R{listingFee.toFixed(2)}</span>
+                    <span className="text-muted-foreground">Advertising Fee</span>
+                    <span className="font-medium text-secondary">R{advertisingFee.toFixed(2)}</span>
                   </div>
                 </div>
             }
@@ -275,7 +282,7 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
                 </Button>
                 <Button onClick={handleAdvertise} className="flex-1 bg-gradient-gold text-gold-foreground font-semibold hover:opacity-90" size="lg" disabled={saving}>
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Advertise — R{listingFee.toFixed(2)}
+                  Advertise — R{advertisingFee.toFixed(2)}
                 </Button>
               </div>
             </div>
@@ -290,9 +297,9 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
 
             <div className="bg-muted rounded-xl p-6 space-y-3">
               <p className="text-sm text-muted-foreground">Advertising Fee</p>
-              <p className="text-3xl font-bold text-primary">R{listingFee.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-primary">R{advertisingFee.toFixed(2)}</p>
               <p className="text-xs text-muted-foreground">
-                {(LISTING_FEE_PERCENTAGE * 100).toFixed(0)}% of R{priceNum.toFixed(2)} listing price
+                Flat fee by item price (R0–300 → R20, R300–500 → R40, R500–1000 → R80, R1000+ → R120)
               </p>
             </div>
 
@@ -334,7 +341,9 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
             <div>
               <h3 className="text-xl font-display font-bold">Listed Successfully!</h3>
               <p className="text-muted-foreground text-sm mt-2">
-                Your item "{title}" is now live on the marketplace.
+                {justCreatedAdvertised
+                  ? 'Your ad will be reviewed within 3 business days. You\'ll see it on the marketplace once approved.'
+                  : `Your item "${title}" is now live on the marketplace.`}
               </p>
             </div>
             <Button onClick={handleClose} className="bg-gradient-navy text-navy-foreground hover:opacity-90">
