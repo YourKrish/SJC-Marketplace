@@ -6,12 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, CreditCard, CheckCircle, AlertCircle, Upload, ImagePlus, X } from 'lucide-react';
-import { Category, Condition, CATEGORY_LABELS, CONDITION_LABELS, calculateAdvertisingFee, Listing } from '@/lib/types';
+import { ArrowLeft, CreditCard, CheckCircle, Upload, ImagePlus, X } from 'lucide-react';
+import { Category, Condition, CATEGORY_LABELS, CATEGORY_TAG_CLASSNAMES, CONDITION_LABELS, calculateAdvertisingFee, Listing } from '@/lib/types';
 import { addListing } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/lib/auth';
 import { compressImage, MAX_IMAGES } from '@/lib/imageUtils';
+import { cn } from '@/lib/utils';
 
 interface CreateListingProps {
   open: boolean;
@@ -76,6 +77,7 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
     if (!title.trim()) errs.title = 'Title is required';
+    if (imageUrls.length === 0) errs.photos = 'You need at least 1 photo attached to continue.';
     if (title.length > 100) errs.title = 'Title must be under 100 characters';
     if (!description.trim()) errs.description = 'Description is required';
     if (description.length > 500) errs.description = 'Description must be under 500 characters';
@@ -180,7 +182,8 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
 
               {/* Image Upload */}
               <div>
-                <Label>Photos (up to {MAX_IMAGES})</Label>
+                <Label>Photos (at least 1 required, up to {MAX_IMAGES})</Label>
+                {errors.photos && <p className="text-destructive text-xs mt-1">{errors.photos}</p>}
                 <div className="mt-2 grid grid-cols-4 gap-2">
                   {imageUrls.map((url, i) =>
                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-border group">
@@ -290,35 +293,45 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
         }
 
         {step === 'payment' &&
-        <div className="text-center space-y-6 py-4">
-            <DialogHeader>
-              <DialogTitle className="font-display text-xl">Confirm Payment</DialogTitle>
+        <div className="space-y-6 py-2">
+            <DialogHeader className="text-left space-y-2">
+              <DialogTitle className="font-display text-xl">Complete payment</DialogTitle>
+              <DialogDescription className="text-sm text-left leading-relaxed">
+                Scan the QR code below and pay the advertising fee. After we receive your payment, your listing and payment will be reviewed within 3 business days. Once approved, your item will appear on the marketplace.
+              </DialogDescription>
             </DialogHeader>
 
-            <div className="bg-muted rounded-xl p-6 space-y-3">
-              <p className="text-sm text-muted-foreground">Advertising Fee</p>
-              <p className="text-3xl font-bold text-primary">R{advertisingFee.toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground">
-                Flat fee by item price (R0–300 → R20, R300–500 → R40, R500–1000 → R80, R1000+ → R120)
-              </p>
-            </div>
-
-            <div className="bg-muted/50 rounded-lg p-4 text-left space-y-2">
-              <h4 className="font-semibold text-sm">{title}</h4>
-              <div className="flex gap-2">
-                <Badge variant="outline" className="text-xs">{category && CATEGORY_LABELS[category as Category]}</Badge>
-                <Badge variant="outline" className="text-xs">{condition && CONDITION_LABELS[condition as Condition]}</Badge>
+            <div className="rounded-xl border border-border bg-card p-4 space-y-4">
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-1">Pay by QR code</h4>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Amount due: <span className="font-semibold text-foreground">R{advertisingFee.toFixed(2)}</span>
+                  {' '}(flat fee by item price tier)
+                </p>
+                <div className="flex justify-center rounded-lg bg-muted/50 p-4">
+                  <img
+                    src="/payment-qr.png"
+                    alt="QR code for advertising fee payment"
+                    className="max-w-[240px] w-full h-auto object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/placeholder.svg';
+                    }}
+                  />
+                </div>
               </div>
-              {imageUrls.length > 0 &&
-            <p className="text-xs text-muted-foreground">{imageUrls.length} photo{imageUrls.length > 1 ? 's' : ''} attached</p>
-            }
-            </div>
 
-            <div className="flex items-start gap-2 text-left bg-accent/20 p-3 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-accent-foreground mt-0.5 shrink-0" />
-              <p className="text-xs text-accent-foreground">
-                This fee covers your listing advertisement on the St John's College Marketplace. Advertised listings get priority visibility.
-              </p>
+              <div className="bg-muted/50 rounded-lg p-3 text-left space-y-2">
+                <h4 className="font-semibold text-sm">{title}</h4>
+                <div className="flex flex-wrap gap-2">
+                  <Badge className={cn('text-xs', category && CATEGORY_TAG_CLASSNAMES[category as Category])}>
+                    {category && CATEGORY_LABELS[category as Category]}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">{condition && CONDITION_LABELS[condition as Condition]}</Badge>
+                </div>
+                {imageUrls.length > 0 && (
+                  <p className="text-xs text-muted-foreground">{imageUrls.length} photo{imageUrls.length > 1 ? 's' : ''} attached</p>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-3">
@@ -327,7 +340,7 @@ export default function CreateListing({ open, onClose, onCreated, user }: Create
                 Back
               </Button>
               <Button onClick={handlePay} className="flex-1 bg-gradient-navy text-navy-foreground hover:opacity-90" disabled={saving}>
-                {saving ? 'Saving…' : 'Pay & List Now'}
+                {saving ? 'Submitting…' : 'Submit ad (Press once you have paid)'}
               </Button>
             </div>
           </div>

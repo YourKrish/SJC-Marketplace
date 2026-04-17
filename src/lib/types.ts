@@ -16,14 +16,26 @@ export interface Listing {
 export type Category = 'books' | 'stationery' | 'kit' | 'uniform' | 'electronics' | 'notes' | 'other';
 export type Condition = 'new' | 'like-new' | 'good' | 'fair';
 
+/** Plain category names (no emojis), for labels and filters. */
 export const CATEGORY_LABELS: Record<Category, string> = {
-  books: '📚 Books',
-  stationery: '✏️ Stationery',
-  kit: '🏑 Sports Kit',
-  uniform: '👔 Uniform',
-  electronics: '💻 Electronics',
-  notes: '📝 Notes',
-  other: '📦 Other',
+  books: 'Books',
+  stationery: 'Stationery',
+  kit: 'Sports kit',
+  uniform: 'Uniform',
+  electronics: 'Electronics',
+  notes: 'Notes',
+  other: 'Other',
+};
+
+/** Category chips — solid fills (no transparency) in St John’s palette. */
+export const CATEGORY_TAG_CLASSNAMES: Record<Category, string> = {
+  books: 'bg-[#E8EBF2] text-primary border-0 shadow-sm',
+  stationery: 'bg-[#E4EDF7] text-secondary border-0 shadow-sm',
+  kit: 'bg-[#F2E6EB] text-maroon border-0 shadow-sm',
+  uniform: 'bg-[#ECEEF2] text-foreground border border-[#D8DEE6] shadow-sm',
+  electronics: 'bg-[#E0ECF8] text-secondary border-0 shadow-sm',
+  notes: 'bg-white text-foreground border border-border shadow-sm',
+  other: 'bg-[#E8EAED] text-muted-foreground border-0 shadow-sm',
 };
 
 export const CONDITION_LABELS: Record<Condition, string> = {

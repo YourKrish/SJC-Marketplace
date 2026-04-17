@@ -6,6 +6,7 @@ export interface Message {
   senderId: string;
   senderName: string;
   text: string;
+  read?: boolean;
   createdAt: string;
 }
 
@@ -16,6 +17,8 @@ export interface Conversation {
   participants: { id: string; name: string }[];
   lastMessage?: string;
   lastMessageAt?: string;
+  lastMessageSenderId?: string;
+  lastMessageRead?: boolean;
   createdAt: string;
   listingRemoved?: boolean;
 }
@@ -31,6 +34,8 @@ interface ConversationRow {
   created_at: string;
   updated_at: string;
   last_message?: string | null;
+  last_message_sender_id?: string | null;
+  last_message_read?: boolean;
   listing_removed?: boolean;
 }
 
@@ -40,6 +45,7 @@ interface MessageRow {
   sender_id: string;
   sender_name: string;
   text: string;
+  read?: boolean;
   created_at: string;
 }
 
@@ -54,6 +60,8 @@ function rowToConversation(row: ConversationRow): Conversation {
     ],
     lastMessage: row.last_message ?? undefined,
     lastMessageAt: row.updated_at,
+    lastMessageSenderId: row.last_message_sender_id ?? undefined,
+    lastMessageRead: row.last_message_read,
     createdAt: row.created_at,
     listingRemoved: Boolean(row.listing_removed),
   };
@@ -66,6 +74,7 @@ function rowToMessage(row: MessageRow): Message {
     senderId: row.sender_id,
     senderName: row.sender_name,
     text: row.text,
+    read: row.read,
     createdAt: row.created_at,
   };
 }
@@ -189,16 +198,46 @@ export async function sendMessage(
 
   await supabase
     .from('conversations')
-    .update({ updated_at: new Date().toISOString(), last_message: text.trim().slice(0, 200) })
+    .update({
+      updated_at: new Date().toISOString(),
+      last_message: text.trim().slice(0, 200),
+      last_message_sender_id: senderId,
+      last_message_read: false,
+    })
     .eq('id', conversationId);
 
   return rowToMessage(msgData as MessageRow);
 }
 
-/** Count conversations for the current user (for badge). */
-export async function getConversationCount(userId: string, userEmail?: string): Promise<number> {
-  const convos = await getConversationsForUser(userId, userEmail);
-  return convos.length;
+/** Count unread messages for the current user (messages sent TO them, read = false). Uses RPC for efficiency. */
+export async function getUnreadMessageCount(): Promise<number> {
+  const { data, error } = await supabase.rpc('get_unread_message_count');
+  if (error) {
+    console.error('getUnreadMessageCount:', error);
+    return 0;
+  }
+  return typeof data === 'number' ? data : 0;
+}
+
+/** Mark all messages in a conversation that were sent TO the current user as read. Also sets last_message_read on the conversation. */
+export async function markConversationMessagesAsRead(
+  conversationId: string,
+  currentUserId: string
+): Promise<void> {
+  const { error: msgError } = await supabase
+    .from('messages')
+    .update({ read: true })
+    .eq('conversation_id', conversationId)
+    .neq('sender_id', currentUserId);
+
+  if (msgError) {
+    console.error('markConversationMessagesAsRead:', msgError);
+  }
+
+  await supabase
+    .from('conversations')
+    .update({ last_message_read: true })
+    .eq('id', conversationId);
 }
 
 /** Mark a conversation's listing as sold/removed (so both seller and buyer see the grey state). */

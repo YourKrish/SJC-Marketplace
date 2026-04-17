@@ -60,6 +60,10 @@ export default {
           light: "hsl(var(--navy-light))",
           foreground: "hsl(var(--navy-foreground))",
         },
+        maroon: {
+          DEFAULT: "hsl(var(--maroon))",
+          foreground: "hsl(var(--maroon-foreground))",
+        },
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",

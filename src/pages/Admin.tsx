@@ -11,8 +11,10 @@ import {
   deleteListing,
 } from '@/lib/store';
 import { Listing } from '@/lib/types';
-import { CATEGORY_LABELS, CONDITION_LABELS } from '@/lib/types';
+import { CATEGORY_LABELS, CATEGORY_TAG_CLASSNAMES, CONDITION_LABELS } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Admin() {
@@ -137,7 +139,9 @@ export default function Admin() {
                     <p className="font-semibold text-foreground truncate">{listing.title}</p>
                     <p className="text-sm text-muted-foreground line-clamp-1">{listing.description}</p>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">{CATEGORY_LABELS[listing.category]}</span>
+                      <Badge className={cn('text-xs', CATEGORY_TAG_CLASSNAMES[listing.category])}>
+                        {CATEGORY_LABELS[listing.category]}
+                      </Badge>
                       <span className="text-xs text-muted-foreground">{CONDITION_LABELS[listing.condition]}</span>
                       <span className="text-sm font-medium text-primary">R{listing.price.toFixed(2)}</span>
                       <span className="text-xs text-muted-foreground">by {listing.sellerName}</span>
@@ -147,7 +151,7 @@ export default function Admin() {
                     <Button
                       size="sm"
                       variant="default"
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-success text-success-foreground hover:bg-success/90 shadow-sm"
                       onClick={() => handleApprove(listing.id)}
                       disabled={actingId !== null}
                     >

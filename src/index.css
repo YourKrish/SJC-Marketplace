@@ -1,92 +1,101 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* St John’s College marketplace — navy, maroon, royal blue, uniform grey ([stjohnscollege.co.za](https://www.stjohnscollege.co.za)) */
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 40% 13%;
+    --background: 220 33% 97%;
+    --foreground: 220 39% 19%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 40% 13%;
+    --card-foreground: 220 39% 19%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 13%;
+    --popover-foreground: 220 39% 19%;
 
-    --primary: 218 45% 18%;
+    /* Deep navy #1E2A44 — blazer */
+    --primary: 220 39% 19%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 348 60% 35%;
+    /* Royal blue #2F5D9F */
+    --secondary: 216 54% 40%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 45%;
-
-    --accent: 348 55% 40%;
+    /* Maroon #800020 — tie / sports */
+    --accent: 343 100% 25%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --muted: 220 22% 94%;
+    --muted-foreground: 211 13% 54%;
+
+    --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 218 45% 18%;
+    --border: 220 18% 90%;
+    --input: 220 18% 90%;
+    --ring: 216 54% 45%;
 
-    --radius: 0.75rem;
+    --radius: 1.125rem;
 
-    --gold: 348 60% 35%;
+    --gold: 343 100% 25%;
     --gold-foreground: 0 0% 100%;
-    --navy: 218 45% 18%;
-    --navy-light: 218 35% 28%;
+    --navy: 220 39% 19%;
+    --navy-light: 216 54% 40%;
     --navy-foreground: 0 0% 100%;
-    --success: 142 70% 40%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --maroon: 343 100% 25%;
+    --maroon-foreground: 0 0% 100%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --success: 145 63% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 37 90% 51%;
+    --warning-foreground: 220 39% 15%;
+
+    --sidebar-background: 220 33% 98%;
+    --sidebar-foreground: 220 39% 19%;
+    --sidebar-primary: 220 39% 19%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 25% 94%;
+    --sidebar-accent-foreground: 220 39% 19%;
+    --sidebar-border: 220 18% 90%;
+    --sidebar-ring: 216 54% 45%;
 
     --font-display: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
+
+    --crest-watermark: url('/lovable-uploads/183793d1-b257-467b-abe4-7fe0fbe50a54.jpg');
   }
 
   .dark {
-    --background: 218 45% 8%;
-    --foreground: 220 20% 95%;
-    --card: 218 40% 12%;
-    --card-foreground: 220 20% 95%;
-    --popover: 218 40% 12%;
-    --popover-foreground: 220 20% 95%;
-    --primary: 348 60% 40%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 218 35% 25%;
-    --secondary-foreground: 220 20% 95%;
-    --muted: 218 30% 18%;
-    --muted-foreground: 220 15% 60%;
-    --accent: 348 55% 40%;
+    --background: 220 39% 9%;
+    --foreground: 220 25% 95%;
+    --card: 220 35% 12%;
+    --card-foreground: 220 25% 95%;
+    --popover: 220 35% 12%;
+    --popover-foreground: 220 25% 95%;
+    --primary: 220 39% 85%;
+    --primary-foreground: 220 39% 12%;
+    --secondary: 216 54% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 343 85% 45%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 218 30% 20%;
-    --input: 218 30% 20%;
-    --ring: 348 60% 40%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --muted: 220 28% 18%;
+    --muted-foreground: 211 13% 62%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 28% 20%;
+    --input: 220 28% 20%;
+    --ring: 216 54% 55%;
+    --sidebar-background: 220 39% 10%;
+    --sidebar-foreground: 220 25% 95%;
+    --sidebar-primary: 216 54% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 28% 16%;
+    --sidebar-accent-foreground: 220 25% 95%;
+    --sidebar-border: 220 28% 18%;
+    --sidebar-ring: 216 54% 55%;
   }
 }
 
@@ -96,34 +105,59 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
   }
 
-  h1, h2, h3, h4 {
-    font-family: var(--font-display);
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-body);
+    @apply font-semibold tracking-tight;
   }
 }
 
 @layer utilities {
-  .text-gradient-gold {
+  .text-gradient-brand {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(348 60% 35%), hsl(348 50% 45%));
+    background-image: linear-gradient(135deg, hsl(216 54% 42%), hsl(220 39% 28%));
   }
 
+  /* Profile / hero: navy → royal blue */
   .bg-gradient-navy {
-    background: linear-gradient(135deg, hsl(218 45% 18%), hsl(218 35% 28%));
+    background: linear-gradient(135deg, #1e2a44 0%, #2f5d9f 100%);
   }
 
+  /* Legacy name — CTA sell gradient maroon → red */
   .bg-gradient-gold {
-    background: linear-gradient(135deg, hsl(348 60% 35%), hsl(348 50% 45%));
+    background: linear-gradient(135deg, #800020 0%, #c0392b 100%);
+  }
+
+  .bg-gradient-sell-cta {
+    background: linear-gradient(135deg, #800020 0%, #c0392b 100%);
   }
 
   .shadow-card {
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   }
 
   .shadow-card-hover {
-    box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.06);
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.1),
+      0 4px 12px rgba(30, 42, 68, 0.06);
+  }
+
+  .shadow-search-focus {
+    box-shadow:
+      0 0 0 3px rgba(47, 93, 159, 0.18),
+      0 4px 20px rgba(30, 42, 68, 0.08);
+  }
+
+  .crest-watermark {
+    background-image: var(--crest-watermark);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
   }
 }

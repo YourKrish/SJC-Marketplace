@@ -1,5 +1,7 @@
 # Welcome to your Lovable project
 
+**Maintainer:** [@Krishyyyyfr](https://github.com/Krishyyyyfr)
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID

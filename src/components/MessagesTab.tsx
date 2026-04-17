@@ -10,6 +10,7 @@ import {
   getMessagesForConversation,
   sendMessage,
   markConversationListingRemoved,
+  markConversationMessagesAsRead,
 } from '@/lib/messages';
 import { deleteListing } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
@@ -68,8 +69,13 @@ export default function MessagesTab({ user, initialConversationId, onConversatio
     getMessagesForConversation(activeConvo.id).then((list) => {
       setMessages(list);
       setMessagesLoading(false);
+      markConversationMessagesAsRead(activeConvo.id, user.id);
+      setConversations((prev) =>
+        prev.map((c) => (c.id === activeConvo.id ? { ...c, lastMessageRead: true } : c))
+      );
+      onConversationUpdate?.();
     });
-  }, [activeConvo?.id]);
+  }, [activeConvo?.id, user.id, onConversationUpdate]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -93,6 +99,11 @@ export default function MessagesTab({ user, initialConversationId, onConversatio
 
   const otherParticipant = (convo: Conversation) =>
     convo.participants.find((p) => p.id !== user.id && p.id !== user.email)?.name || 'Unknown';
+
+  const hasUnread = (convo: Conversation) =>
+    convo.lastMessageSenderId != null &&
+    convo.lastMessageSenderId !== user.id &&
+    !convo.lastMessageRead;
 
   const handleMarkSold = async () => {
     if (!activeConvo || removing) return;
@@ -142,8 +153,11 @@ export default function MessagesTab({ user, initialConversationId, onConversatio
                 >
                   <div className="flex justify-between items-start">
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm text-foreground truncate">
+                      <p className="font-medium text-sm text-foreground truncate flex items-center gap-2">
                         {otherParticipant(convo)}
+                        {hasUnread(convo) && (
+                          <span className="w-2 h-2 rounded-full bg-destructive shrink-0" aria-hidden />
+                        )}
                       </p>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">
                         Re: {convo.listingTitle}
@@ -254,7 +268,7 @@ export default function MessagesTab({ user, initialConversationId, onConversatio
               className="flex-1"
               disabled={sending}
             />
-            <Button size="icon" onClick={handleSend} disabled={!newMsg.trim() || sending}>
+            <Button size="icon" variant="secondary" onClick={handleSend} disabled={!newMsg.trim() || sending}>
               <Send className="w-4 h-4" />
             </Button>
           </div>

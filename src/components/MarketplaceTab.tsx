@@ -13,13 +13,19 @@ interface MarketplaceTabProps {
 export default function MarketplaceTab({ listings, searchQuery, onSelectListing }: MarketplaceTabProps) {
   const [category, setCategory] = useState<Category | 'all'>('all');
 
-  const filtered = listings.filter((l) => {
-    const matchesCategory = category === 'all' || l.category === category;
-    const matchesSearch = !searchQuery || 
-      l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filtered = listings
+    .filter((l) => {
+      const matchesCategory = category === 'all' || l.category === category;
+      const matchesSearch = !searchQuery || 
+        l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        l.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      if (category !== 'all') return 0;
+      const adDiff = Number(b.advertised) - Number(a.advertised);
+      return adDiff !== 0 ? adDiff : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   return (
     <div className="space-y-6">

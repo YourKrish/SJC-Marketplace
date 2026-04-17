@@ -164,7 +164,7 @@ export default function MessagesDialog({ open, onClose, user, initialConversatio
                 placeholder="Type a message..."
                 className="flex-1"
               />
-              <Button size="icon" onClick={handleSend} disabled={!newMsg.trim()}>
+              <Button size="icon" variant="secondary" onClick={handleSend} disabled={!newMsg.trim()}>
                 <Send className="w-4 h-4" />
               </Button>
             </div>

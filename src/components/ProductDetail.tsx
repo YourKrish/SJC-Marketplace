@@ -1,21 +1,14 @@
 import { useState } from 'react';
-import { Listing, CATEGORY_LABELS, CONDITION_LABELS } from '@/lib/types';
+import { Listing, CATEGORY_LABELS, CATEGORY_TAG_CLASSNAMES, CONDITION_LABELS } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MessageCircle, ArrowLeft, User, Clock, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
+import { MessageCircle, ArrowLeft, User, Clock, ChevronLeft, ChevronRight, Trash2, ImageOff } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { deleteListing } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast';
-
-const CATEGORY_IMAGES: Record<string, string> = {
-  books: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&h=400&fit=crop',
-  stationery: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=600&h=400&fit=crop',
-  kit: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=600&h=400&fit=crop',
-  uniform: 'https://images.unsplash.com/photo-1604671801908-6f0c6a092c05?w=600&h=400&fit=crop',
-  electronics: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop',
-  other: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=400&fit=crop',
-};
 
 interface ProductDetailProps {
   listing: Listing | null;
@@ -36,31 +29,44 @@ export default function ProductDetail({ listing, open, onClose, onMessageSeller,
 
   if (!listing) return null;
 
-  const images = listing.imageUrls && listing.imageUrls.length > 0
-    ? listing.imageUrls
-    : [CATEGORY_IMAGES[listing.category] || CATEGORY_IMAGES.other];
-
-  const safeIndex = Math.min(imgIndex, images.length - 1);
+  const images = listing.imageUrls && listing.imageUrls.length > 0 ? listing.imageUrls : [];
+  const safeIndex = images.length > 0 ? Math.min(imgIndex, images.length - 1) : 0;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { setImgIndex(0); onClose(); } }}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0 gap-0">
         <div className="relative">
-          <img
-            src={images[safeIndex]}
-            alt={listing.title}
-            className="w-full aspect-[4/3] object-cover"
-          />
+          {images.length > 0 ? (
+            <img
+              src={images[safeIndex]}
+              alt={listing.title}
+              className="w-full aspect-[4/3] object-cover"
+            />
+          ) : (
+            <div
+              className="w-full aspect-[4/3] bg-muted flex flex-col items-center justify-center gap-2 text-muted-foreground"
+              role="img"
+              aria-label="No photo for this listing"
+            >
+              <ImageOff className="w-12 h-12 opacity-50" />
+              <span className="text-sm">No photo attached</span>
+            </div>
+          )}
           <button
             onClick={() => { setImgIndex(0); onClose(); }}
             className="absolute top-3 left-3 bg-card/80 backdrop-blur-sm rounded-full p-2 hover:bg-card transition-colors"
           >
             <ArrowLeft className="w-4 h-4 text-card-foreground" />
           </button>
-          <div className="absolute top-3 right-3">
-            <Badge variant="secondary" className="bg-card/90 backdrop-blur-sm text-card-foreground">
+          <div className="absolute top-3 right-3 flex flex-wrap items-center gap-1.5 justify-end max-w-[calc(100%-5rem)]">
+            <Badge className={cn('text-xs', CATEGORY_TAG_CLASSNAMES[listing.category])}>
               {CATEGORY_LABELS[listing.category]}
             </Badge>
+            {listing.advertised && (
+              <Badge className="bg-maroon text-maroon-foreground hover:bg-maroon font-semibold text-[10px] px-1.5 py-0 h-5 border-0 shadow-sm">
+                AD
+              </Badge>
+            )}
           </div>
 
           {images.length > 1 && (
@@ -92,7 +98,7 @@ export default function ProductDetail({ listing, open, onClose, onMessageSeller,
 
         <div className="p-6 space-y-5">
           <DialogHeader className="text-left space-y-2">
-            <DialogTitle className="text-xl font-display">{listing.title}</DialogTitle>
+            <DialogTitle className="text-xl font-body font-bold tracking-tight">{listing.title}</DialogTitle>
             <p className="text-2xl font-bold text-primary font-body">
               R{listing.price.toFixed(2)}
             </p>
@@ -137,16 +143,21 @@ export default function ProductDetail({ listing, open, onClose, onMessageSeller,
               </>
             ) : (
               <>
-                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Seller
-                </h4>
+                <div className="space-y-2 mb-3">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <User className="w-4 h-4 text-primary" />
+                    Seller
+                  </h4>
+                  <p className="text-sm font-medium text-foreground">{listing.sellerName}</p>
+                  <VerifiedBadge />
+                </div>
                 <Button
+                  variant="secondary"
                   onClick={() => onMessageSeller?.(listing)}
-                  className="w-full mt-2 bg-gradient-navy text-navy-foreground hover:opacity-90"
+                  className="w-full mt-1 shadow-sm"
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  Message Seller
+                  Message seller
                 </Button>
               </>
             )}
