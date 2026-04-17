@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+
 
 **Maintainer:** [@Krishyyyyfr](https://github.com/Krishyyyyfr)
 
